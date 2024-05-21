@@ -1,0 +1,5 @@
+# depslib dependency file v1.0
+1701609979 source:c:\users\asus\documents\cpp\maxfact\main.cpp
+	<iostream>
+	<limits>
+

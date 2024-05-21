@@ -1,0 +1,7 @@
+# depslib dependency file v1.0
+1706475926 source:c:\users\asus\documents\cpp\inv\main.cpp
+	<iostream>
+	<vector>
+	<algorithm>
+	<numeric>
+

@@ -1,0 +1,5 @@
+# depslib dependency file v1.0
+1700297541 source:c:\users\asus\documents\cpp\kontest1\main.cpp
+	<iostream>
+	<vector>
+

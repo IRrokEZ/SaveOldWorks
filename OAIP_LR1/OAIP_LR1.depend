@@ -1,0 +1,8 @@
+# depslib dependency file v1.0
+1701618562 source:c:\users\asus\documents\cpp\oaip_lr1\main.cpp
+	<iostream>
+	<clocale>
+	<math.h>
+	<limits>
+	<iomanip>
+
