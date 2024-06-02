@@ -1,0 +1,145 @@
+command: 'hand'
+command: 'genfield'
+command: 'work'
+  2 groups generated: 
+  X adges: 1 100
+  Y adges: 1 20
+  RC - turning (Center)
+  angle: 90
+command: 'esc'
+  X adges: 1 100
+  Y adges: 1 20
+command: 'esc'
+command: wawe
+Error! Incorrect input. Please try again
+WAVE algorithm
+K-MEANS algorithm
+command: 'hand'
+command: 'genfield'
+command: 'work'
+  2 groups generated: 
+  X adges: 1 100
+  Y adges: 1 20
+  RC - turning (Center)
+  angle: 90
+command: 'esc'
+  X adges: 1 100
+  Y adges: 1 20
+command: 'esc'
+K-MEANS algorithm
+command: адвў
+Error! Incorrect input. Please try again
+command: 'hand'
+command: 'genfield'
+command: 'work'
+  2 groups generated: 
+  X adges: 1 100
+  Y adges: 1 20
+  RC - turning (Center)
+  angle: 90
+command: 'esc'
+  X adges: 1 100
+  Y adges: 1 20
+command: 'esc'
+EM algorithm
+command: esc
+To file: alg 1
+filename is: MyEmTest1.txt
+command: 'exit'
+command: 'hand'
+command: 'genfield'
+command: 'work'
+  2 groups generated: 
+  X adges: -10 10
+  Y adges: -5 5
+command: 'esc'
+  X adges: -2 8
+  Y adges: 4 6
+command: 'esc'
+K-MEANS algorithm
+command: 'hand'
+command: 'genfield'
+command: 'work'
+  2 groups generated: 
+  X adges: -10 10
+  Y adges: -5 5
+command: 'esc'
+  X adges: -2 5
+  Y adges: 4 6
+command: 'esc'
+K-MEANS algorithm
+command: адвў
+Error! Incorrect input. Please try again
+command: 'hand'
+command: 'genfield'
+command: 'work'
+  2 groups generated: 
+  X adges: -10 10
+  Y adges: -5 5
+command: 'esc'
+  X adges: -2 5
+  Y adges: 4 6
+command: 'esc'
+K-MEANS algorithm
+command: 'hand'
+command: 'genfield'
+command: wotk
+Error! Incorrect input. Please try again
+command: 'work'
+  4 groups generated: 
+  X adges: -10 10
+  Y adges: -5 5
+command: 'esc'
+  X adges: -2 5
+  Y adges: 4 6
+command: 'esc'
+  X adges: 1 5
+  Y adges: 1 5
+command: 'esc'
+  X adges: 2 6
+  Y adges: 2 6
+command: 'esc'
+K-MEANS algorithm
+command: 'hand'
+command: 'genfield'
+command: 'work'
+  4 groups generated: 
+command: 'hand'
+command: 'genfield'
+command: 'work'
+  2 groups generated: 
+  X adges: -10 10
+  Y adges: -5 5
+command: 'esc'
+  X adges: -2 5
+  Y adges: 4 6
+command: 'esc'
+K-MEANS algorithm
+command: 'hand'
+command: 'genfield'
+command: 'work'
+  2 groups generated: 
+  X adges: -10 10
+  Y adges: -5 5
+command: 'esc'
+  X adges: -2 6
+  Y adges: 5 7
+command: 'esc'
+K-MEANS algorithm
+command: 'hand'
+command: 'genfield'
+command: 'work'
+  2 groups generated: 
+  X adges: -10 10
+  Y adges: -5 5
+command: 'esc'
+  X adges: -2 5
+  Y adges: 4 6
+command: 'esc'
+K-MEANS algorithm
+command: 
+command: 
+command: 
+command: 
+command: 
+command: 
