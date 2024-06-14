@@ -8,1441 +8,10 @@
 #include <string>
 #include <vector>
 
-const double PI = 3.1415926535897932384626433832795;
-const double eps = 0.0000001;
-
-std::fstream Mylog;
-
-void RewriteLaunch (int val) { //launcher
-    std::fstream launcher;
-    launcher.open("launch.log", std::fstream::trunc);
-    launcher << val;
-    launcher.close();
-}
-
-int ReadLaunch () { //launch reading
-    std::fstream launcher;
-    int val;
-    launcher.open("launch.log");
-    launcher >> val;
-    launcher.close();
-    return val;
-}
-
-double DegreesToRadians (double Grad) { //convertion of degrees to radians
-    return (Grad * PI / 180);
-}
-
-void Error (int type) { //error warning
-    switch (type) {
-        case 1:
-            std::cout << std::endl << "Size of std::vector less than 1" << std::endl;
-            Mylog << "Error! Size of std::vector less than 1" << std::endl;
-            break;
-        case 2:
-            std::cout << std::endl << "Size of group less than 1" << std::endl;
-            Mylog << "Error! Size of group less than 1" << std::endl;
-            break;
-        case 3:
-            std::cout << std::endl << "Couldn't open file" << std::endl;
-            Mylog << "Error! Couldn't open file" << std::endl;
-            break;
-        case 4:
-            std::cout << std::endl << "Worksize mustn't be less than 1" << std::endl;
-            Mylog << "Error! Worksize mustn't be less than 1" << std::endl;
-            break;
-        case 5:
-            std::cout << std::endl << "Incorrect input. Please try again" << std::endl;
-            Mylog << "Error! Incorrect input. Please try again" << std::endl;
-            break;
-        case 6:
-            std::cout << std::endl << "Incorrect value of point's label_" << std::endl;
-            Mylog << "Error! Incorrect value of point's label_" << std::endl;
-            break;
-        case 7:
-            std::cout << std::endl << "Incorrect file data" << std::endl;
-            Mylog << "Error! Incorrect file data" << std::endl;
-            break;
-        default:
-            std::cout << std::endl << "Unnamed Error" << std::endl;
-            Mylog << "Error! Unnamed Error" << std::endl;
-            break;
-    }
-}
-
-bool IsInVector (const std::vector<int> &vect, int elem) { //checking of element in std::vector
-    bool rez = false;
-    for (size_t i = 0; i < vect.size(); ++ i){
-        if (vect[i] == elem){
-            rez = true;
-            return true;
-        }
-    }
-    return rez;
-}
-
-double Sqr (double val) {
-    return val * val;
-}
-
-double Correct (double val) { //change too little value to 0
-    if (val < eps) {
-        return 0.0;
-    }
-    return val;
-}
-
-class Point { //points
-private:
-    double x_, y_; //coordinates
-    int label_; //label
-
-public:
-    Point () = default; //Default constructor
-    Point (double new_x, double new_y) : x_(new_x), y_(new_y) {} // Initialize fields with coordinates
-    Point (double new_x, double new_y, int new_label) // Initialize fields with new arguments
-        : x_(new_x), y_(new_y), label_(new_label) {} 
-    Point (const Point &other) 
-        : x_(other.x_), y_(other.y_), label_(other.label_) {} // Copy constructor
-
-    double GetX () { //get X
-        return x_;
-    }
-    double GetY () { //get Y
-        return y_;
-    }
-    int GetLabel () { //get label_
-        return label_;
-    }
-
-    void SetX (double new_x) { //set X coordinate
-        x_ = new_x;
-    }
-    void SetY (double new_y) { //set Y coordinate
-        y_ = new_y;
-    }
-    void SetLabel (int new_label) { //set label
-        label_ = new_label;
-    }
-
-    void AddX (double x) { //move X coordinate
-        x_ += x;
-    }
-    void AddY (double y) { //move Y coordinate
-        y_ += y;
-    }
-    Point& operator = (const Point& other) { //remake coordinates
-        x_ = other.x_;
-        y_ = other.y_;
-        label_ = other.label_;
-        return *this;
-    }
-};
-
-std::vector<Point> arrr (const std::string& filename) { //read Point std::vector from file
-    std::fstream f;
-    double x, y;
-    int l;
-    f.open(filename);
-    std::vector<Point> rez;
-    while (!f.eof()) {
-        f >> x >> y >> l;
-        rez.push_back(Point(x, y, l));
-    }
-    return rez;
-}
-
-class Control {
-private:
-    std::vector<double> vec1_, vec2_; //std::vectors of coordinates
-    std::vector<Point> group_; //std::vector of groups
-    size_t num_point1_, num_point2_, num_point_group_;
-public:
-    Control () = default; //default constructor
-
-    void MakeLabel (int lb) { //group label_
-        for (size_t i = 0; i < num_point_group_; ++ i) {
-            group_[i].SetLabel(lb);
-        }
-    }
-    std::vector<double> CreateNorm (size_t number_of_points, double min_val, double max_val) { //norm gisto
-        if (number_of_points < 1) {
-            Error(1);
-            return {}; // Empty, default-constructed std::vector
-        }
-
-        if (min_val < max_val) {
-            std::swap(min_val, max_val);
-        }
-
-        std::vector<double> arr (number_of_points); // Create a std::vector of predefined size
-        double sum, temp;
-        int mmn = static_cast<int>(min_val) * 10,
-            mmx = (static_cast<int>(max_val) + 1) * 10,
-            range;
-        range = mmx - mmn + 1;
-
-        for (int i = 0; i < static_cast<int>(number_of_points); ++ i) {
-            sum = 0;
-            for (int j = 0; j < 1000; ++ j) {
-                temp = ((rand () % range) + mmn) / 10.0;
-                if ((temp < min_val) || (temp > max_val)) {
-                    -- j;
-                } else {
-                    sum += temp;
-                }
-            }
-            sum /= 1000;
-            if ((sum < min_val) || (sum > max_val)) {
-                -- i;
-            } else {
-                arr[i] = sum;
-            }
-        }
-        return arr;
-    }
-    void GenRnd (size_t number_of_points, double min_val, double max_val) { //ravn gisto
-        if (number_of_points < 1) {
-            Error(1);
-            return void();
-        }
-
-        vec1_.clear();
-        num_point1_ = number_of_points;
-        for (size_t i = 0; i < num_point1_; ++ i) {
-            vec1_.push_back(((rand() % (static_cast<int>(100 * max_val)
-                                        - static_cast<int>(100 * min_val)))
-                            + static_cast<int>(100 * min_val)) / 100.0);
-        }
-    }
-    void GenNorm (size_t number_of_points, double min_val, double max_val) { //norm generation
-        if (number_of_points < 1) {
-            Error(1);
-            return void();
-        }
-
-        vec2_.clear();
-        num_point2_ = number_of_points;
-        if (max_val < min_val) {
-            std::swap(min_val, max_val);
-        }
-        std::vector<double> arr = CreateNorm(num_point2_, min_val, max_val);
-        for (size_t i = 0; i < num_point2_; ++ i) {
-            vec2_.push_back(arr[i]);
-        }
-    }
-    void GenGroup (size_t number_of_points, double min_val_x, double max_val_x, double min_val_y, double max_val_y, int label) { //group creating
-        if (number_of_points < 1) {
-            Error(2);
-            return void();
-        }
-
-        num_point_group_ = number_of_points;
-        group_.clear();
-        std::vector<double> arrx = CreateNorm(num_point_group_, min_val_x, max_val_x);
-        std::vector<double> arry = CreateNorm(num_point_group_, min_val_y, max_val_y);
-        for(size_t i = 0; i < num_point_group_; ++ i){
-            group_.push_back(Point(arrx[i], arry[i], label));
-        }
-    }
-    void GenGroup (const std::vector<Point>& values) { //group creating copy
-        num_point_group_ = values.size();
-        group_.clear();
-        for (size_t i = 0; i < num_point_group_; ++ i) {
-            group_.push_back(Point(values[i]));
-        }
-    }
-    void FileRavn () { //printing ravn std::vector in file
-        std::fstream text, script;
-        script.open("plotravn.plt", std::fstream::trunc); //writing script to the file
-        script << "width=1" << std::endl << "bin(x, s) = s*int(x/s) + width/2"
-               << std::endl << "set boxwidth width" << std::endl << "plot 'ravn.txt' u (bin($1,width)):(1.0) \\"
-               << std::endl << "s f w boxes fs solid 0.5 title 'Ravn Gisto'" << std::endl;
-        script.close();
-        text.open("ravn.txt", std::fstream::trunc); //writing values to the file
-        for (size_t i = 0; i < num_point1_; ++ i) {
-            text << vec1_[i] << std::endl;
-        }
-        text.close();
-    }
-    void FileNorm () { //printing norm std::vector in file
-        std::fstream text, script;
-        script.open("plotnorm.plt", std::fstream::trunc);
-        script << "width=0.1" << std::endl << "bin(x, s) = s*int(x/s) + width/2"
-            << std::endl << "set boxwidth width" << std::endl << "plot 'norm.txt' u (bin($1,width)):(1.0) \\"
-            << std::endl << "s f w boxes fs solid 0.5 title 'Norm Gisto'" << std::endl;
-        script.close();
-        text.open("norm.txt", std::fstream::trunc);
-        for (size_t i = 0; i < num_point2_; ++ i) {
-            text << vec2_[i] << std::endl;
-        }
-        text.close();
-    }
-    void FileGroup () { //printing group in file
-        std::fstream text, script;
-        script.open("plotgroup.plt", std::fstream::trunc);
-        script << "plot 'group.txt'";
-        script.close();
-        text.open("group.txt", std::fstream::trunc); //base file
-        for (size_t i = 0; i < num_point_group_; ++ i) {
-            text << group_[i].GetX() << " " << group_[i].GetY() << std::endl;
-        }
-        text.close();
-    }
-    std::vector<double> RetRavn () { //ravn generation cpy
-        std::vector<double> arr(num_point1_);
-        for (size_t i = 0; i < num_point1_; ++ i) {
-            arr[i] = vec1_[i];
-        }
-        return arr;
-    }
-    std::vector<double> RetNorm () { //norm generation cpy
-        std::vector<double> arr(num_point2_);
-        for (size_t i = 0; i < num_point2_; ++ i) {
-            arr[i] = vec2_[i];
-        }
-        return arr;
-    }
-    std::vector<Point> RetGroup () { //group cpy
-        std::vector<Point> arr; // No default ctor for Point, so no resizes
-        arr.reserve(num_point_group_); // At least we'll hint about our dataset size
-        for (size_t i = 0; i < num_point_group_; ++ i) {
-            arr.push_back(group_[i]);
-        }
-        return arr;
-    }
-    void TurnNULL (double phi) { //rotarion group relative (0;0)
-        double newx, newy;
-        std::vector<Point> newvect;
-        newvect.reserve(num_point_group_);
-        for (size_t i = 0; i < num_point_group_; ++ i) {
-            newx = group_[i].GetX();
-            newy = group_[i].GetY();
-            newvect.push_back(Point(
-                newx * cos(phi) - newy * sin(phi),
-                newx * sin(phi) + newy * cos(phi)));
-        }
-        group_.clear();
-        GenGroup(newvect);
-    }
-    void turnCenter (double phi) { //rotarion group relative to group center
-        double midx = 0, midy = 0, newx, newy;
-        std::vector<Point> newvect;
-        newvect.reserve(num_point_group_);
-        for (size_t i = 0; i < num_point_group_; ++ i) {
-            midx += group_[i].GetX();
-            midy += group_[i].GetY();
-        }
-        midx /= num_point_group_;
-        midy /= num_point_group_;
-        for (size_t i = 0; i < num_point_group_; ++ i) {
-            newx = group_[i].GetX() - midx;
-            newy = group_[i].GetY() - midy;
-            newvect.push_back(Point(
-                (newx * cos(phi) - newy * sin(phi)) + midx,
-                (newx * sin(phi) + newy * cos(phi)) + midy));
-        }
-        group_.clear();
-        GenGroup(newvect);
-    }
-    void MoveX (double deltax) { //X axis moving
-        std::vector<Point> newvect = RetGroup();
-        for (size_t i = 0; i < num_point_group_; ++ i) {
-            newvect[i].SetX(newvect[i].GetX() + deltax);
-        }
-        group_.clear();
-        GenGroup(newvect);
-    }
-    void MoveY (double deltay) { //Y axis moving
-        std::vector<Point> newvect = RetGroup();
-        for (size_t i = 0; i < num_point_group_; ++ i) {
-            newvect[i].SetY(newvect[i].GetY() + deltay);
-        }
-        group_.clear();
-        GenGroup(newvect);
-    }
-    int RetGroupSize () {
-        return num_point_group_;
-    }
-};
-
-class Group{
-    private:
-        std::unique_ptr<Control> group;//array of groups
-        int Grouplabel_;
-    public:
-        Group() = default; // Default constructor, required for std::vector::resize
-
-        Group(int groupsize, double minx, double miny, double maxx, double maxy, int GL){//constructor
-            this -> group.reset(new Control());
-            this -> Grouplabel_ = GL;
-            this -> group -> GenGroup(groupsize, minx, maxx, miny, maxy, GL);
-        }
-        Group(std::unique_ptr<Control> newgroup){//constructor //it means that label_ included into Point' std::vector
-            std::vector<Point> arr = newgroup -> RetGroup();
-            this -> Grouplabel_ = arr[0].GetLabel();
-            this -> group.reset(new Control());
-            this -> group -> GenGroup(arr);
-        }
-        Group(std::unique_ptr <Control> newgroup, int LB){//constructor
-            std::vector<Point> arr = newgroup -> RetGroup();
-            this -> Grouplabel_ = LB;
-            this -> group.reset(new Control());
-            this -> group -> GenGroup(arr);
-            this -> group -> MakeLabel(LB);
-        }
-        int RetGrouplabel_(){
-            return this -> Grouplabel_;
-        }
-        std::unique_ptr<Control> Ret_Field_Group() const {//returning of a group
-            std::unique_ptr <Control> rgroup(new Control());
-            std::vector<Point> arr = this -> group -> RetGroup();
-            rgroup -> GenGroup(arr);
-            return rgroup;
-        }
-        Group(const Group &newgroup) {//cpy constructor
-            std::unique_ptr<Control> GR = newgroup.Ret_Field_Group();
-            std::vector<Point> arr = GR -> RetGroup();
-            this -> group.reset(new Control());
-            this -> Grouplabel_ = arr[0].GetLabel();
-            this -> group -> GenGroup(arr);
-        }
-        Group(std::unique_ptr <Group> &newgroup) {//cpy constructor
-            std::unique_ptr <Control> GR = newgroup->Ret_Field_Group();
-            std::vector<Point> arr = GR -> RetGroup();
-            this -> group.reset(new Control());
-            this -> Grouplabel_ = arr[0].GetLabel();
-            this -> group -> GenGroup(arr);
-        }
-        void Regrupp(const std::unique_ptr <Control> &newgroup){ //we modified this object by new Control object
-            std::vector<Point> arr = newgroup -> RetGroup();
-            this -> group.reset(new Control());
-            this -> group -> GenGroup(arr);
-        }
-        void Regrupp(const std::unique_ptr <Control> &newgroup, int LB){ //we modified this object by new Control object
-            std::vector<Point> arr = newgroup -> RetGroup();
-            this -> group.reset(new Control());
-            this -> group -> GenGroup(arr);
-            this -> Grouplabel_ = LB;
-            this -> group -> MakeLabel(LB);
-        }
-        void ReMakeLabel(){//remake label_ of a group
-            this -> group -> MakeLabel(this -> Grouplabel_);
-        }
-        void ReMakeLabel(int LB){//remake label_ of a group
-            this -> Grouplabel_ = LB;
-            this -> group -> MakeLabel(this -> Grouplabel_);
-        }
-};
-
-class FindByWave{
-    private:
-        std::vector<int> label_;//label_s
-        std::vector<Point> workPoints;//current points
-        std::vector<std::vector<int>> binary_table;//binary matrix
-        std::vector<std::vector<double>> RO;//distances between points
-        double maxRO;
-    public:
-        void BeforeWork(){//default constructor
-            this -> workPoints.resize(0);
-            this -> maxRO = 0;
-            this -> label_.resize(0);
-            this -> binary_table.resize(0);
-            this -> RO.resize(0);
-        }
-        void BeforeStart(){//saving
-            for(unsigned int i = 0; i < this -> workPoints.size(); ++ i){
-                this -> workPoints[i].SetLabel(0);
-            }
-            this -> maxRO = 0;
-            this -> label_.resize(this -> workPoints.size());
-            this -> binary_table.resize(this -> workPoints.size());
-            this -> RO.resize(this -> workPoints.size());
-            for(unsigned int i = 0; i < this -> workPoints.size(); ++ i){
-                this -> binary_table[i].resize(this -> workPoints.size());
-                this -> RO[i].resize(this -> workPoints.size());
-            }
-        }
-        FindByWave(const std::vector<Point>& koords){//constructor
-            this -> BeforeWork();
-            this -> workPoints = koords;
-            this -> BeforeStart();
-        }
-        void CreateRo(){//creating of matrix of distances
-            double x1, y1, x2, y2;
-            for(unsigned int i = 0; i < this -> workPoints.size(); ++ i){
-                this -> label_[i] = -1;
-                x1 = this -> workPoints[i].GetX();
-                y1 = this -> workPoints[i].GetY();
-                for(unsigned int j = 0; j < this -> workPoints.size(); ++ j){
-                    x2 = this -> workPoints[j].GetX();
-                    y2 = this -> workPoints[j].GetY();
-                    this -> RO[i][j] = sqrt(Sqr(x1 - x2) + Sqr(y1 - y2));
-                    if(this -> RO[i][j] > this -> maxRO){
-                        this -> maxRO = this -> RO[i][j];
-                    }
-                }
-            }
-        }
-        void GenBinary(double threshold){//creating of binary matrix
-            for(unsigned int i = 0; i < this -> workPoints.size(); ++ i){
-                for(unsigned int j = 0; j < this -> workPoints.size(); ++ j){
-                    if((this -> RO[i][j] > 0) && (this -> RO[i][j] < (threshold + eps))){
-                        this -> binary_table[i][j] = 1;
-                    } else {
-                        this -> binary_table[i][j] = 0;
-                    }
-                }
-            }
-        }
-        void Wave(){//wave clasters finding
-            int tag = -1, controlsumm, add_elem;
-            std::vector<int> positions;
-            for(unsigned int q = 0; q < this -> workPoints.size(); q ++){
-                positions.clear();
-                controlsumm = 0; //If we check all std::strings, where first elems was included into cluster
-                add_elem = 0; //If we add new element to cluster
-                for(unsigned int i = q; i < this -> workPoints.size(); ++ i){
-                    if(this -> label_[i] == -1){
-                        tag ++;
-                        positions.push_back(i);
-                        add_elem ++;
-                        this -> label_[i] = tag;
-                        for(unsigned int j = 0; j < this -> workPoints.size(); ++ j){
-                            if(this -> binary_table[i][j] == 1){
-                                positions.push_back(j);
-                                add_elem ++;
-                            }
-                        }
-                        i = this -> workPoints.size();//break;
-                    }
-                }
-                while(controlsumm != add_elem){
-                    for(unsigned int i = 0; i < positions.size(); ++ i){
-                        controlsumm ++;
-                        for(unsigned int j = 0; j < this -> workPoints.size(); ++ j){
-                            if(this -> binary_table[positions[i]][j] == 1){
-                                if(!(IsInVector(positions, j))){
-                                    add_elem ++;
-                                    positions.push_back(j);
-                                }
-                            }
-                        }
-                    }
-                }
-                for(const auto &strnumber : positions){
-                    this -> label_[strnumber] = tag;
-                }
-            }
-            for(unsigned int i = 0; i < this -> workPoints.size(); ++ i){
-                this -> workPoints[i].SetLabel(this -> label_[i]);
-                if(this -> label_[i] < 0){
-                    Error(6);
-                }
-            }
-        }
-        std::vector<Point> FindClusters(double threshold){
-            this -> BeforeStart();
-            this -> CreateRo();
-            this -> GenBinary(threshold);
-            this -> Wave();
-            return this -> workPoints;
-        }
-};
-
-class FindByKM{
-    private:
-        int k, fsize, optimalK;
-        double bestWeight;
-        std::vector<Point> workPoints, fieldkoord, centerKoords, startPoints;
-    public:
-        void BeforeWork(){//default constructor
-            this -> workPoints.resize(0);
-            this -> fieldkoord.resize(0);
-            this -> centerKoords.resize(0);
-            this -> startPoints.resize(0);
-            this -> k = 0;
-            this -> optimalK = 0;
-            this -> bestWeight = 0;
-            this -> fsize = 0;
-        }
-        void BeforeStart(){
-            for(unsigned int i = 0; i < this -> workPoints.size(); ++ i){
-                this -> workPoints[i].SetLabel(0);
-            }
-            this -> fieldkoord.resize(0);
-            for(unsigned int i = 0; i < this -> workPoints.size(); ++ i){
-                this -> fieldkoord.push_back(Point(this -> workPoints[i]));
-            }
-        }
-        FindByKM(const std::vector<Point>& koords){//constructor
-            this -> BeforeWork();
-            this -> workPoints = koords;
-            this -> BeforeStart();
-        }
-        void KMeans(int userK){//kmeans with fixed K
-            int minid, qStart, qEnd, ptr = 0;
-            double minVal;
-            bool change, esc = false;
-            std::vector<double> MuFunction;
-            if(userK < 0){
-                qStart = 1;
-                qEnd = this -> fsize;
-            } else {
-                qStart = userK;
-                qEnd = userK + 1;
-            }
-            MuFunction.resize(this -> fsize - 1);
-            for(int q = qStart; ((q < qEnd) && (!esc)); q ++){
-                MuFunction[ptr] = 0;
-                this -> k = q;
-                std::vector<std::vector<double>> RO_selected, RO_centers;
-                change = true;
-                this -> startPoints.clear();
-                this -> startPoints.reserve(this -> k);
-                RO_selected.resize(this -> k);
-                this -> centerKoords.resize(this -> k);
-                std::vector<Point> midPoint;
-                std::vector<int> numberOfPointsInEachCluster(this -> k);
-                for(int i = 0; i < this -> k; ++ i){ //create first matrix of RO between all points by pairs
-                    this -> startPoints.push_back(Point(this -> fieldkoord[i]));
-                    midPoint.push_back(Point(0, 0, -5));//-5 for mid points
-                    numberOfPointsInEachCluster[i] = 0;
-                    RO_selected[i].resize(this -> fsize);
-                    for(int j = 0; j < this -> fsize; j++){
-                        RO_selected[i][j] = Correct(sqrt(Sqr(this -> startPoints[i].GetX() - this -> fieldkoord[j].GetX())
-                                                         + Sqr(this -> startPoints[i].GetY() - this -> fieldkoord[j].GetY())));
-                    }
-                }
-                for(int j = 0; j < this -> fsize; ++ j){//mark each point (which center was the nearest)
-                    minVal = RO_selected[0][j];
-                    minid = 0;
-                    for(int i = 1; i < this -> k; ++ i){//find minimal ro from j point to k ros of each cluster
-                        if(RO_selected[i][j] < minVal){
-                            minVal = RO_selected[i][j];
-                            minid = i;
-                        }
-                    }
-                    this -> fieldkoord[j].SetLabel(minid);
-                    numberOfPointsInEachCluster[minid] ++;
-                }
-                for(int i = 0; i < this -> fsize; ++ i){ //caclulate mid points
-                    int id = this -> fieldkoord[i].GetLabel();
-                    midPoint[id].AddX(Correct(this -> fieldkoord[i].GetX() / numberOfPointsInEachCluster[id]));
-                    midPoint[id].AddY(Correct(this -> fieldkoord[i].GetY() / numberOfPointsInEachCluster[id]));
-
-                }
-                for(int i = 0; i < this -> k; ++ i){ //make new koord centers
-                    this -> centerKoords[i].SetX(midPoint[i].GetX());
-                    this -> centerKoords[i].SetY(midPoint[i].GetY());
-                }
-                while(change){
-                    RO_centers.resize(this -> k);
-                    change = false;
-                    midPoint.clear();
-                    numberOfPointsInEachCluster.clear();
-                    midPoint.resize(this -> k);
-                    numberOfPointsInEachCluster.resize(this -> k);
-                    for(int i = 0; i < this -> k; ++ i){ //calc all rors from centers
-                        RO_centers[i].resize(this -> fsize);
-                        midPoint[i] = Point(0,0,-5);
-                        numberOfPointsInEachCluster[i] = 0;
-                        for(int j = 0; j < this -> fsize; ++ j){ //find new ros from new centers to each point
-                            RO_centers[i][j] = Correct(sqrt(Sqr(this -> centerKoords[i].GetX() - this -> fieldkoord[j].GetX())
-                                                            + Sqr(this -> centerKoords[i].GetY() - this -> fieldkoord[j].GetY())));
-                        }
-                    }
-                    for(int j = 0; j < this -> fsize; ++ j){
-                        minVal = RO_centers[0][j];
-                        minid = 0;
-                        for(int i = 1; i < this -> k; ++ i){
-                            if(RO_centers[i][j] < minVal){
-                                minVal = RO_centers[i][j];
-                                minid = i;
-                            }
-                        }
-                        this -> fieldkoord[j].SetLabel(minid);
-                        numberOfPointsInEachCluster[minid] ++;
-                    }
-                    for(int i = 0; i < this -> fsize; ++ i){ //caclulate mid points
-                        int id = this -> fieldkoord[i].GetLabel();
-                        midPoint[id].AddX(Correct(this -> fieldkoord[i].GetX() / numberOfPointsInEachCluster[id]));
-                        midPoint[id].AddY(Correct(this -> fieldkoord[i].GetY() / numberOfPointsInEachCluster[id]));
-                    }
-                    for(int i = 0; i < this -> k; ++ i){//check definitions between new and old center koords
-                        double xOld, yOld, xNew, yNew;
-                        xOld = this -> centerKoords[i].GetX();
-                        yOld = this -> centerKoords[i].GetY();
-                        xNew = midPoint[i].GetX();
-                        yNew = midPoint[i].GetY();
-                        if((abs(xOld - xNew) > eps) || (abs(yOld - yNew) > eps)){
-                            change = true;
-                            i = this -> k;
-                        }
-                    }
-                    if(change){
-                        this -> centerKoords.clear();
-                        this -> centerKoords.resize(this -> k);
-                        for(int i = 0; i < this -> k; ++ i){
-                            this -> centerKoords[i].SetX(midPoint[i].GetX());
-                            this -> centerKoords[i].SetY(midPoint[i].GetY());
-                        }
-                    }
-                }
-                for(int i = 0; i < this -> k; ++ i){// here we find optimal k
-                    for(int j = 0; j < this -> fsize; ++ j){
-                        if(this -> fieldkoord[j].GetLabel() == i){
-                            for(int p = j + 1; p < this -> fsize; p ++){
-                                if(this -> fieldkoord[p].GetLabel() == i){
-                                   MuFunction[ptr] += Correct(sqrt(Sqr(this -> fieldkoord[j].GetX() - this -> fieldkoord[p].GetX()) +
-                                                                    Sqr(this -> fieldkoord[j].GetY() - this -> fieldkoord[p].GetY())));
-                                }
-                            }
-                        }
-                    }
-                }
-                for (int i = 0; i < q; ++ i){//here we find optimal k
-                    for(int j = i + 1; j < q; ++ j){
-                        MuFunction[ptr] += Correct(sqrt(Sqr(this -> centerKoords[i].GetX() - this -> centerKoords[j].GetX()) +
-                                                      Sqr(this -> centerKoords[i].GetY() - this -> centerKoords[j].GetY())));
-                    }
-                }
-                if((q != 1) && ((qEnd - qStart) > 1)){
-                    if(MuFunction[ptr - 1] < MuFunction[ptr]){
-                        esc = true;
-                        ptr -= 2;
-                    }
-                }
-                ptr ++;
-            }
-            this -> optimalK = ptr + 1;
-            this -> bestWeight = MuFunction[ptr];
-            this -> workPoints.resize(0);
-            for(unsigned int i = 0; i < this -> fieldkoord.size(); ++ i){
-                this -> workPoints.push_back(this -> fieldkoord[i]);
-            }
-        }
-        std::vector<Point> FindClusters(int userNumberOfClusters){
-            this -> BeforeStart();
-            this -> KMeans(userNumberOfClusters);
-            std::cout << "3" << std::endl;
-            if(userNumberOfClusters == -1){
-                std::cout << std::endl << "Optimal number of clusters is " << this -> optimalK << std::endl;
-                this -> BeforeStart();
-                this -> KMeans(this -> optimalK);
-            }
-            return this -> workPoints;
-        }
-};
-
-class FindBySPTR{
-    private:
-        std::vector<Point> workPoints;
-        int launchNumber;
-        std::vector<std::vector<int>> binary_table;//binary matrix
-        std::vector<double> allLengths;
-        std::vector<std::vector<double>> RO;//distances between points
-        double maxRO;
-        std::vector<int> label_;//label_s
-    public:
-        void BeforeWork(){//default constructor
-            std::fstream f;
-            this -> launchNumber = -1;
-            f.open("launch.log");
-            f >> this -> launchNumber;
-            if(this -> launchNumber <= 1){
-                f.close();
-                f.open("launch.log", std::fstream::trunc);
-                f << 1;
-            }
-            f.close();
-            this -> workPoints.resize(0);
-            this -> allLengths.resize(0);
-            this -> maxRO = 0;
-            this -> label_.resize(0);
-            this -> binary_table.resize(0);
-            this -> RO.resize(0);
-        }
-        void BeforeStart(){//saving
-            for(unsigned int i = 0; i < this -> workPoints.size(); ++ i){
-                this -> workPoints[i].SetLabel(0);
-            }
-            this -> allLengths.resize(0);
-            this -> maxRO = 0;
-            this -> label_.resize(this -> workPoints.size());
-            this -> binary_table.resize(this -> workPoints.size());
-            this -> RO.resize(this -> workPoints.size());
-            for(unsigned int i = 0; i < this -> workPoints.size(); ++ i){
-                this -> binary_table[i].resize(this -> workPoints.size());
-                this -> RO[i].resize(this -> workPoints.size());
-            }
-        }
-        FindBySPTR(const std::vector<Point>& koords){//constructor
-            this -> BeforeWork();
-            this -> workPoints = koords;
-            this -> BeforeStart();
-        }
-        void CreateRo(){//creating of matrix of distances
-            double x1, y1, x2, y2;
-            for(unsigned int i = 0; i < this -> workPoints.size(); ++ i){
-                this -> label_[i] = -1;
-                x1 = this -> workPoints[i].GetX();
-                y1 = this -> workPoints[i].GetY();
-                for(unsigned int j = 0; j < this -> workPoints.size(); ++ j){
-                    x2 = this -> workPoints[j].GetX();
-                    y2 = this -> workPoints[j].GetY();
-                    this -> RO[i][j] = sqrt(Sqr(x1 - x2) + Sqr(y1 - y2));
-                    if(this -> RO[i][j] > this -> maxRO){
-                        this -> maxRO = this -> RO[i][j];
-                    }
-                }
-            }
-        }
-        void GenBinary(double threshold){//creating of binary matrix
-            for(unsigned int i = 0; i < this -> workPoints.size(); ++ i){
-                for(unsigned int j = 0; j < this -> workPoints.size(); ++ j){
-                    if((this -> RO[i][j] > 0) && (this -> RO[i][j] < (threshold + eps))){
-                        this -> binary_table[i][j] = 1;
-                    } else {
-                        this -> binary_table[i][j] = 0;
-                    }
-                }
-            }
-        }
-        void Wave(){//wave clasters finding
-            int tag = -1, controlsumm, add_elem;
-            std::vector<int> positions;
-            for(unsigned int q = 0; q < this -> workPoints.size(); q ++){
-                positions.clear();
-                controlsumm = 0; //If we check all std::strings, where first elems was included into cluster
-                add_elem = 0; //If we add new element to cluster
-                for(unsigned int i = q; i < this -> workPoints.size(); ++ i){
-                    if(this -> label_[i] == -1){
-                        tag ++;
-                        positions.push_back(i);
-                        add_elem ++;
-                        this -> label_[i] = tag;
-                        for(unsigned int j = 0; j < this -> workPoints.size(); ++ j){
-                            if(this -> binary_table[i][j] == 1){
-                                positions.push_back(j);
-                                add_elem ++;
-                            }
-                        }
-                        i = this -> workPoints.size();//break;
-                    }
-                }
-                while(controlsumm != add_elem){
-                    for(unsigned int i = 0; i < positions.size(); ++ i){
-                        controlsumm ++;
-                        for(unsigned int j = 0; j < this -> workPoints.size(); ++ j){
-                            if(this -> binary_table[positions[i]][j] == 1){
-                                if(!(IsInVector(positions, j))){
-                                    add_elem ++;
-                                    positions.push_back(j);
-                                }
-                            }
-                        }
-                    }
-                }
-                for(const auto &strnumber : positions){
-                    this -> label_[strnumber] = tag;
-                }
-            }
-            for(unsigned int i = 0; i < this -> workPoints.size(); ++ i){
-                this -> workPoints[i].SetLabel(this -> label_[i]);
-                if(this -> label_[i] < 0){
-                    Error(6);
-                }
-            }
-        }
-        void CalculateRo(){//calculate all Ro between all points
-            for(unsigned int i = 0; i < this -> workPoints.size(); ++ i){
-                for(unsigned int j = 0; j < this -> workPoints.size(); ++ j){
-                    if(i == j){
-                        this -> RO[i][j] = -1;
-                    } else if(j == 0){
-                        this -> RO[i][j] = -1;
-                    } else {
-                        this -> RO[i][j] = sqrt(Sqr(this -> workPoints[i].GetX() - this -> workPoints[j].GetX()) +
-                                                Sqr(this -> workPoints[i].GetY() - this -> workPoints[j].GetY()));
-                    }
-                }
-            }
-        }
-        void FillLengths(){//making std::vector of distances for GNU gistogram
-            std::vector<int> index;
-            std::fstream tree, script, text, launchlog;
-            std::vector<std::vector<double>> TempRo = this -> RO;
-            double minRo, mr;
-            int minId = -1, mi = -1, saveIND = -1;
-            launchlog.open("launch.log");
-            launchlog >> this -> launchNumber;
-            this -> launchNumber ++;
-            launchlog << this -> launchNumber;
-            launchlog.close();
-            std::string filename = "Tree" + std::to_string(this -> launchNumber) + ".txt", scriptname = "plotTree" + std::to_string(this -> launchNumber) + ".plt",
-                        sstr = "TempGisto" + std::to_string(this -> launchNumber) + ".txt", ssstr = "plotTempGisto" + std::to_string(this -> launchNumber) + ".plt";
-            script.open(scriptname, std::fstream::trunc);
-            script << "plot '" << filename << "' using 1:2 with lines lc rgb \"black\" lw 1 notitle";
-            script.close();
-            tree.open(filename, std::fstream::trunc);
-            index.resize(0);
-            index.push_back(0);
-            while(this -> allLengths.size() < this -> workPoints.size() - 1){
-                mr = -1;
-                for(const auto &id : index){//for each id from index array
-                    minRo = TempRo[id][0];
-                    for(unsigned int i = 0; i < this -> workPoints.size(); ++ i){
-                        if((minRo < 0) && (TempRo[id][i] > 0)){
-                            minRo = TempRo[id][i];
-                            minId = i;
-                        } else if ((TempRo[id][i] < minRo) && (TempRo[id][i] > 0)){
-                            minRo = TempRo[id][i];
-                            minId = i;
-                        }
-                    }
-                    if((mr < 0) || (mr > minRo)){
-                        mr = minRo;
-                        mi = minId;
-                        saveIND = id;
-                    }
-                }
-                tree << this -> workPoints[saveIND].GetX() << " " <<this -> workPoints[saveIND].GetY() << std::endl
-                    << this -> workPoints[mi].GetX() << " " <<this -> workPoints[mi].GetY() << std::endl << std::endl;
-                this -> allLengths.push_back(mr);
-                index.push_back(mi);
-                for(unsigned int i = 0; i < this -> workPoints.size(); ++ i){
-                    TempRo[i][mi] = -1;
-                }
-            }
-            tree.close();
-            script.open(ssstr, std::fstream::trunc);
-            script << "width=0.01" << std::endl << "bin(x, s) = s*int(x/s) + width/2"
-                   << std::endl << "set boxwidth width" << std::endl << "plot '" << sstr << "' u (bin($1,width)):(1.0) \\"
-                   << std::endl << "s f w boxes fs solid 0.5 title 'Porog Gisto'" << std::endl;
-            script.close();
-            text.open(sstr, std::fstream::trunc); //writing values to the file
-            for(unsigned int i = 0; i < (this -> workPoints.size() - 1); ++ i){
-                text << this -> allLengths[i] << std::endl;
-            }
-            text.close();
-        }
-        std::vector<Point> FindClusters(double threshold){//current points
-            std::string scn1 = "TempGisto" + std::to_string(this -> launchNumber);
-            this -> BeforeStart();
-            this -> CalculateRo();
-            this -> FillLengths();
-            this -> launchNumber ++;
-            RewriteLaunch(this -> launchNumber);
-            this -> BeforeStart();
-            this -> CreateRo();
-            this -> GenBinary(threshold);
-            this -> Wave();
-            return this -> workPoints;
-        }
-};
-
-class FindByHierarchy{
-    private:
-        int launchNumber;
-        std::vector<Point> workPoints;
-    public:
-        void BeforeStart(){//saving
-            std::fstream f;
-            f.open("launch.log");
-            f >> this -> launchNumber;
-            if(this -> launchNumber < 1){
-                f.close();
-                f.open("launch.log", std::fstream::trunc);
-                f << 1;
-            }
-            f.close();
-            for(unsigned int i = 0; i < this -> workPoints.size(); ++ i){
-                this -> workPoints[i].SetLabel(0);
-            }
-        }
-        FindByHierarchy(const std::vector<Point>& koords){//constructor
-            this -> workPoints = koords;
-        }
-        void Hierarchy(int userK){
-            double x1, y1, x2, y2, minro, midx, midy;
-            std::fstream tree, script, launchlog;
-            launchlog.open("launch.log");
-            launchlog >> this -> launchNumber;
-            launchlog.close();
-            std::string filename = "HieTree" + std::to_string(this -> launchNumber) + ".txt";
-            std::string scriptname = "plotHieTree" + std::to_string(this -> launchNumber) + ".plt";
-            script.open(scriptname, std::fstream::trunc);
-            script << "plot '" << filename << "' using 1:2 with lines lc rgb \"black\" lw 2 notitle";
-            script.close();
-            launchlog.open("launch.log", std::fstream::trunc);
-            launchlog.close();
-            tree.open(filename, std::fstream::trunc);
-            std::vector<Point> newPoints = this -> workPoints;
-            int p1, p2, numpoints = this -> workPoints.size(), numclusters = userK;
-            std::vector<std::vector<double>> ro, rro;
-            while(numpoints != numclusters){
-                ro.resize(newPoints.size());
-                minro = -1;
-                for(unsigned int i = 0; i < newPoints.size(); ++ i){
-                    ro[i].resize(newPoints.size());
-                    x1 = newPoints[i].GetX();
-                    y1 = newPoints[i].GetY();
-                    for(unsigned int j = 0; j < newPoints.size(); ++ j){
-                            if(i != j){
-                            x2 = newPoints[j].GetX();
-                            y2 = newPoints[j].GetY();
-                            ro[i][j] = sqrt(Sqr(x1 - x2) + Sqr(y1 - y2));
-                            if(((minro < 0) || (minro > ro[i][j])) && (ro[i][j] > 0)){
-                                minro = ro[i][j];
-                                p1 = i;
-                                p2 = j;
-                            }
-                        }
-                    }
-                }
-                x1 = newPoints[p1].GetX();
-                x2 = newPoints[p2].GetX();
-                y1 = newPoints[p1].GetY();
-                y2 = newPoints[p2].GetY();
-                tree << x1 << " " << y1 << std::endl << x2 << " " << y2 << std::endl << std::endl;
-                midx = (x1 + x2) / 2.0;
-                midy = (y1 + y2) / 2.0;
-                for(unsigned int i = 0; i < newPoints.size(); ++ i){
-                    ro[i].erase(ro[i].begin() + std::max(p1, p2));
-                    ro[i].erase(ro[i].begin() + std::min(p1, p2));
-                }
-                ro.erase(ro.begin() + std::max(p1, p2));
-                ro.erase(ro.begin() + std::min(p1, p2));
-                newPoints.erase(newPoints.begin() + std::max(p1, p2));
-                newPoints.erase(newPoints.begin() + std::min(p1, p2));
-                newPoints.push_back(Point(midx, midy, 0));
-                numpoints --;
-            }
-            tree.close();
-            rro.resize(newPoints.size());
-            for(unsigned int i = 0; i < newPoints.size(); ++ i){
-                rro[i].resize(this -> workPoints.size());
-                x1 = newPoints[i].GetX();
-                y1 = newPoints[i].GetY();
-                for(unsigned int j = 0; j < this -> workPoints.size(); ++ j){
-                    x2 = this -> workPoints[j].GetX();
-                    y2 = this -> workPoints[j].GetY();
-                    rro[i][j] = Correct(sqrt(Sqr(x1 - x2) + Sqr(y1 - y2)));
-                }
-            }
-            for(unsigned int j = 0; j < this -> workPoints.size(); ++ j){
-                minro = rro[0][j];
-                p1 = 0;
-                for(unsigned int i = 0; i < newPoints.size(); ++ i){
-                    if(rro[i][j] < minro){
-                        minro = rro[i][j];
-                        p1 = i;
-                    }
-                }
-                this -> workPoints[j].SetLabel(p1);
-            }
-        }
-        std::vector<Point> FindClusters(int userNumberOfClusters){//current points
-            this -> BeforeStart();
-            this -> Hierarchy(userNumberOfClusters);
-            return this -> workPoints;
-        }
-};
-
-class FindByForel{
-    private:
-        int launchNumber;
-        std::vector<Point> workPoints;
-    public:
-        FindByForel(const std::vector<Point>& koords){//constructor
-            this -> workPoints = koords;
-        }
-        void Forel(double threshold){
-            std::fstream circle, script, text;//, launchlog;
-            std::vector<double> ro;//matrix of distances
-            std::vector<int> binary, id;
-            bool change;
-            int startID, counterPoints, ptr, clustID = 0;
-            double midx, midy;
-            this -> launchNumber = ReadLaunch();
-            RewriteLaunch(this -> launchNumber + 1);
-            std::string filename = "CircleF" + std::to_string(this -> launchNumber) + ".txt";
-            std::string scriptname = "plotCircleF" + std::to_string(this -> launchNumber) + ".plt";
-            script.open(scriptname, std::fstream::trunc);
-            script << "plot '" << filename << "' using 1:2:3 with circles lc rgb \"black\" lw 2 notitle";
-            script.close();
-            circle.open(filename, std::fstream::trunc);
-            for(unsigned int i = 0; i < this -> workPoints.size(); ++ i){
-                this -> workPoints[i].SetLabel(-i);
-            }
-            std::vector<Point> tempPoints = this -> workPoints;
-            std::unique_ptr <Point> center (new Point(tempPoints[0]));
-            while(tempPoints.size() > 0){
-                startID = rand () % tempPoints.size();
-                ro.resize(tempPoints.size());
-                binary.resize(tempPoints.size());
-                change = true;
-                center.reset(new Point(tempPoints[startID]));
-                while(change){
-                    midx = 0;
-                    midy = 0;
-                    counterPoints = 0;
-                    for(unsigned int i = 0; i < tempPoints.size(); ++ i){
-                        ro[i] = sqrt(Sqr(center -> GetX() - tempPoints[i].GetX()) + Sqr(center -> GetY() - tempPoints[i].GetY()));
-                        if(ro[i] < threshold){
-                            binary[i] = 1;
-                            counterPoints ++;
-                            midx += tempPoints[i].GetX();
-                            midy += tempPoints[i].GetY();
-                        } else {
-                            binary[i] = 0;
-                        }
-                    }
-                    midx /= counterPoints;
-                    midy /= counterPoints;
-                    if((abs(center -> GetX() - midx) < eps) && (abs(center -> GetY() - midy) < eps)){//when center stops (in that iteration)
-                        change = false;
-                        circle << midx << " " << midy << " " << threshold << std::endl;
-                        id.resize(counterPoints);
-                        ptr = 0;
-                        for(unsigned int i = 0; ((i < tempPoints.size()) && (ptr < counterPoints)); ++ i){
-                            if(binary[i] == 1){
-                                id[ptr] = tempPoints[i].GetLabel();
-                                ptr ++;
-                            }
-                        }
-                        ptr = counterPoints - 1;
-                        for(unsigned int i = this -> workPoints.size() - 1; /*((i >= 0) && (*/ptr >= 0/*))*/; i --){//making label_s
-                            if(this -> workPoints[i].GetLabel() == id[ptr]){
-                                this -> workPoints[i].SetLabel(clustID);
-                                ptr --;
-                            }
-                        }
-                        ptr = counterPoints - 1;
-                        for(unsigned int i = tempPoints.size() - 1; /*((i >= 0) && (*/ptr >= 0/*))*/; i --){//delete found cluster
-                            if(tempPoints[i].GetLabel() == id[ptr]){
-                                tempPoints.erase(tempPoints.begin() + i);
-                                ptr --;
-                            }
-                        }
-                        clustID ++;
-                    } else {
-                        center.reset(new Point(midx, midy, -5));
-                    }
-                }
-            }
-            circle.close();
-        }
-        std::vector<Point> FindClusters(double threshold){//current points
-            this -> Forel(threshold);
-            std::string filename = "Forel" + std::to_string(this -> launchNumber) + ".txt", accept = "zzz";
-            this -> launchNumber ++;
-            RewriteLaunch(this ->  launchNumber);
-            return this -> workPoints;
-        }
-};
-
-class FindByDbscan{
-    private:
-        int launchNumber;
-        std::vector<int> counters, marks;//label_s
-        std::vector<Point> workPoints, fieldkoord;
-        std::vector<std::vector<double>> RO;//distances between points
-    public:
-        void BeforeStart(){//saving
-            for(unsigned int i = 0; i < this -> workPoints.size(); ++ i){
-                this -> workPoints[i].SetLabel(0);
-            }
-            this -> fieldkoord = this -> workPoints;
-            this -> RO.resize(this -> workPoints.size());
-            this -> counters.resize(0);
-            for(unsigned int i = 0; i < this -> workPoints.size(); ++ i){
-                this -> RO[i].resize(this -> workPoints.size());
-            }
-        }
-        FindByDbscan(const std::vector<Point>& koords){//constructor
-            this -> workPoints = koords;
-        }
-        void CalcRo(){//matrix of distances
-            double x1, y1, x2, y2;
-            this -> RO.resize(this -> workPoints.size());
-            for(unsigned int i = 0; i < this -> workPoints.size(); ++ i){
-                this -> RO[i].resize(this -> workPoints.size());
-                x1 = this -> workPoints[i].GetX();
-                y1 = this -> workPoints[i].GetY();
-                for(unsigned int j = 0; j < this -> workPoints.size(); ++ j){
-                    x2 = this -> workPoints[j].GetX();
-                    y2 = this -> workPoints[j].GetY();
-                    this -> RO[i][j] = sqrt(Sqr(x1 - x2) + Sqr(y1 - y2));
-                }
-            }
-        }
-        std::vector<int> CountNearPoints(std::vector<std::vector<double>> RoMatrix, double radius){
-            std::vector<int> ctr;
-            ctr.resize(this -> workPoints.size());
-            for(unsigned int i = 0; i < this -> workPoints.size(); ++ i){
-                ctr[i] = 0;
-                for(unsigned int j = 0; j < this -> workPoints.size(); ++ j){
-                    if(RoMatrix[i][j] < (radius + eps)){
-                        ctr[i] ++;
-                    }
-                }
-            }
-            return ctr;
-        }
-        std::vector<int> CreateMarks(std::vector<std::vector<double>> ro, double radius, std::vector<int> cnt, int EntNum){//label_s for clusters
-            std::vector<int> marker;
-            marker.resize(this -> workPoints.size());
-            for(unsigned int i = 0; i < this -> workPoints.size(); ++ i){
-                if(cnt[i] > EntNum){
-                    marker[i] = 1;
-                } else {
-                    marker[i] = -1;
-                }
-            }
-            for(unsigned int i = 0; i < this -> workPoints.size(); ++ i){
-                if(marker[i] == -1){
-                    for(unsigned int j = 0; j < this -> workPoints.size(); ++ j){
-                        if((ro[i][j] < (radius + eps)) && (marker[j] == 1)){
-                            marker[i] = 0;
-                        }
-                    }
-                }
-            }
-            return marker;
-        }
-        void DelPoints(double radius, int EntryNum){//delete rubbish
-            this -> fieldkoord.resize(0);
-            for(unsigned int i = 0; i < this -> workPoints.size(); ++ i){
-                this -> fieldkoord.push_back(Point(this -> workPoints[i]));
-            }
-            this -> CalcRo();
-            this -> counters = CountNearPoints(this -> RO, radius);
-            this -> marks = CreateMarks(this -> RO, radius, this -> counters, EntryNum);
-            for(int i = this -> fieldkoord.size() - 1; i >= 0; i --){
-                if(this -> marks[i] == -1){
-                    this -> fieldkoord.erase(this -> fieldkoord.begin() + i);
-                    this -> counters.erase(this -> counters.begin() + i);
-                    for(unsigned int j = 0; j < this -> fieldkoord.size(); ++ j){
-                        this -> RO[j].erase(this -> RO[j].begin() + i);
-                    }
-                    this -> RO.erase(this -> RO.begin() + i);
-                    this -> marks.erase(this -> marks.begin() + i);
-                    this -> workPoints[i].SetLabel(-9999);
-                }
-            }
-        }
-        void DBSCANAlghorithm(double radius, int numpointsincircle){//wave on points without rubbish
-            this -> BeforeStart();
-            this -> DelPoints(radius, numpointsincircle);
-            this -> workPoints.resize(0);
-            for(unsigned int i = 0; i < this -> fieldkoord.size(); ++ i){
-                this -> workPoints.push_back(Point(this -> fieldkoord[i]));
-            }
-            std::unique_ptr <FindByWave> Waw(new FindByWave(this -> workPoints));
-            this -> workPoints = Waw -> FindClusters(radius + eps);
-        }
-        std::vector<Point> FindClusters(double radius, int NumNearPoints){//current points
-            std::string filename = "DBSCAN" + std::to_string(this -> launchNumber) + ".txt", accept = "zzz";
-            this -> DBSCANAlghorithm(radius, NumNearPoints);
-            this -> launchNumber ++;
-            RewriteLaunch(this -> launchNumber);
-            return this -> workPoints;
-        }
-};
-
-class FindByEM{
-    private:
-        int k, launchNumber;//launch No.
-        std::vector<Point> workPoints;
-        std::vector<Point> CentersA, CentersB;
-    public:
-        void BeforeWork(){//default constructor
-            this -> workPoints.resize(0);
-            this -> CentersA.resize(0);
-            this -> CentersB.resize(0);
-            this -> k = 0;
-        }
-        FindByEM(const std::vector<Point>& koords){//constructor
-            this -> BeforeWork();
-            this -> workPoints = koords;
-        }
-        double CentRo(){
-            double rz = 0;
-            for(unsigned int i = 0; i < CentersB.size(); ++ i){
-                rz += sqrt(Sqr(CentersB[i].GetX() - CentersA[i].GetX()) + Sqr(CentersB[i].GetY() - CentersA[i].GetY()));
-            }
-            if(rz < eps){
-                rz =  -999;
-            }
-            return rz;
-        }
-        void GNUMultOut(int ctr, std::vector<std::vector<int>> clrs){
-            std::fstream mult;
-            mult.open("mult.txt", std::fstream::ate);
-            for(int i = 0; i < this -> k; ++ i){
-                mult << this -> workPoints[i].GetX() << " "
-                     << this -> workPoints[i].GetY() << " " << clrs[this -> workPoints[i].GetLabel()][0] << " "
-                     << clrs[this -> workPoints[i].GetLabel()][1] << " " << clrs[this -> workPoints[i].GetLabel()][2] << std::endl;
-            }
-            mult << std::endl << std::endl;
-            mult.close();
-        }
-        void EM(int userK){//EM with fixed K
-            int itercount = 0;
-            this -> k = this -> workPoints.size();
-            std::vector<std::vector<int>> Mycolors;
-            Mycolors.resize(userK);
-            srand(time(NULL));
-            for(int i = 0; i < userK; ++ i){
-                Mycolors[i].resize(3);
-                Mycolors[i][0] = rand() % 256;
-                Mycolors[i][1] = rand() % 256;
-                Mycolors[i][2] = rand() % 256;
-            }
-            std::vector<std::vector<std::vector<double>>> Sigma, SigmaM;
-            std::vector<std::vector<double>> d, p;
-           double mx;
-           int index, sUk = userK;
-            d.resize(this -> k);
-            p.resize(this -> k);
-            for(int i = 0; i < this -> k; ++ i){
-                d[i].resize(userK);
-                p[i].resize(userK);
-            }
-            this -> CentersB.resize(0);
-            for(int i = 0; i < userK; ++ i){
-                this -> CentersB.push_back(Point(this -> workPoints[i]));
-            }
-            Sigma.resize(userK);
-            SigmaM.resize(userK);
-            for(int i = 0; i < userK; ++ i){
-                Sigma[i].resize(2);
-                SigmaM[i].resize(2);
-                Sigma[i][0].resize(2);
-                Sigma[i][1].resize(2);
-                SigmaM[i][0].resize(2);
-                SigmaM[i][1].resize(2);
-                Sigma[i][0][0] = 1;
-                Sigma[i][0][1] = 0;
-                Sigma[i][1][0] = 0;
-                Sigma[i][1][1] = 1;
-                SigmaM[i][0][0] = 1;
-                SigmaM[i][0][1] = 0;
-                SigmaM[i][1][0] = 0;
-                SigmaM[i][1][1] = 1;
-            }
-            double summ, sumpx, sump, sumpy;
-            std::fstream mult;
-            mult.open("mult.txt", std::fstream::trunc);
-            mult.close();
-            mult.open("mult.plt", std::fstream::trunc);
-            mult << "set terminal gif animate delay 100" << std::endl;
-            mult << "set output 'MULT.gif'" << std::endl;
-            mult << "stats 'mult.txt' nooutput" << std::endl << std::endl;
-            mult << "rgb(r,g,b) = 65536 * int(r) + 256 * int(g) + int(b)" << std::endl << std::endl;
-            mult << "do for[i=1:int(STATS_blocks)]{" << std::endl;
-                mult << "plot 'mult.txt' index(i-1) using 1:2:(rgb($3,$4,$5)) with points lc rgb variable" << std::endl;
-            mult << "}" << std::endl;
-            mult.close();
-            bool esc = true;
-                while(esc){
-                itercount ++;
-                    for(int i = 0; i < this -> k; ++ i){
-                        summ = 0;
-                        for(int j = 0; j < userK; ++ j){
-                            d[i][j] = sqrt(SigmaM[j][0][0] * Sqr(this -> workPoints[i].GetX() - this -> CentersB[j].GetX()) +
-                                   (SigmaM[j][1][0] + SigmaM[j][0][1]) * (this -> workPoints[i].GetX() -
-                                    this -> CentersB[j].GetX()) * (this -> workPoints[i].GetY() - this -> CentersB[j].GetY()) +
-                                    SigmaM[j][1][1] * Sqr(this -> workPoints[i].GetY() - this -> CentersB[j].GetY()));
-                            summ += d[i][j];
-                        }
-                        for(int j = 0; j < userK; ++ j){
-                            p[i][j] = 1.0 / (sUk - 1) - d[i][j] / (sUk - 1) / summ;
-                        }
-                    }
-                    this -> CentersA.resize(0);
-                    for(int j = 0; j < userK; ++ j){
-                        sumpx = 0;
-                        sumpy = 0;
-                        sump = 0;
-                        for(int i = 0; i < this -> k; ++ i){
-                            sumpx += this -> workPoints[i].GetX() * p[i][j];
-                            sumpy += this -> workPoints[i].GetY() * p[i][j];
-                            sump += p[i][j];
-                        }
-                        this -> CentersA.push_back(Point(sumpx / sump, sumpy / sump));
-                    }
-                    if(this -> CentRo() > 0){
-                        this -> CentersB.resize(0);
-                        for(int i = 0; i < userK; ++ i){
-                            this -> CentersB.push_back(CentersA[i]);
-                        }
-                        for(int j = 0; j < userK; ++ j){
-                            Sigma[j][0][0] = 0;
-                            Sigma[j][0][1] = 0;
-                            Sigma[j][1][0] = 0;
-                            Sigma[j][1][1] = 0;
-                            for(int i = 0; i < this -> k; ++ i){
-                                Sigma[j][0][0] += p[i][j] * Sqr(this -> workPoints[i].GetX() - this -> CentersB[j].GetX());
-                                Sigma[j][0][1] += p[i][j] * (this -> workPoints[i].GetX() - this -> CentersB[j].GetX()) *
-                                                            (this -> workPoints[i].GetY() - this -> CentersB[j].GetY());
-                                Sigma[j][1][1] += p[i][j] * Sqr(this -> workPoints[i].GetY() - this -> CentersB[j].GetY());
-                            }
-                            Sigma[j][1][0] = Sigma[j][0][1];
-
-                            SigmaM[j][0][0] = Sigma[j][1][1] / abs(Sigma[j][0][0] * Sigma[j][1][1] -
-                                        Sigma[j][1][0] * Sigma[j][0][1]);
-                            SigmaM[j][0][1] = - Sigma[j][0][1] / abs(Sigma[j][0][0] * Sigma[j][1][1] -
-                                        Sigma[j][1][0] * Sigma[j][0][1]);
-                            SigmaM[j][1][0] = - Sigma[j][1][0] / abs(Sigma[j][0][0] * Sigma[j][1][1] -
-                                        Sigma[j][1][0] * Sigma[j][0][1]);
-                            SigmaM[j][1][1] = Sigma[j][0][0] / abs(Sigma[j][0][0] * Sigma[j][1][1] -
-                                        Sigma[j][1][0] * Sigma[j][0][1]);
-                        }
-                        if((itercount % 2) == 1){
-                            for(int i = 0; i < this -> k; i++){
-                                mx = p[i][0];
-                                index = 0;
-                                for(int j = 0; j < userK; ++ j){
-                                    if(p[i][j] > mx){
-                                        mx = p[i][j];
-                                        index = j;
-                                    }
-                                }
-                                this -> workPoints[i].SetLabel(index);
-                            }
-                            this -> GNUMultOut(itercount, Mycolors);
-                        }
-                    } else {
-                        esc = false;
-                        for(int i = 0; i < this -> k; i++){
-                            mx = p[i][0];
-                            index = 0;
-                            for(int j = 0; j < userK; ++ j){
-                                if(p[i][j] > mx){
-                                    mx = p[i][j];
-                                    index = j;
-                                }
-                            }
-                            this -> workPoints[i].SetLabel(index);
-                        }
-                        this -> GNUMultOut(itercount, Mycolors);
-                    }
-                    this -> CentersB.resize(0);
-                    for(int i = 0; i < userK; ++ i){
-                        this -> CentersB.push_back(Point(this -> CentersA[i]));
-                    }
-                }
-        }
-        std::vector<Point> FindClusters(int userNumberOfClusters){//current points
-            this -> EM(userNumberOfClusters);
-            this -> launchNumber ++;
-            RewriteLaunch(this -> launchNumber);
-            return this -> workPoints;
-        }
-};
+#include "globals.hpp"
+#include "Point.hpp"
+#include "Control.hpp"
+#include "Group.hpp"
 
 class Field{
     private:
@@ -1456,7 +25,21 @@ class Field{
         std::vector<std::vector<int>> binary_table;//binary matrix
         std::vector<std::vector<double>> RO;//distances between points
         double bestWeight, maxRO;
+
+        std::vector<Point> CreatePointsArray (const std::string& filename) { //read Point std::vector from file
+            std::fstream input_file;
+            double x, y;
+            int label;
+            input_file.open(filename);
+            std::vector<Point> rez;
+            while (!input_file.eof()) {
+                input_file >> x >> y >> label;
+                rez.push_back(Point(x, y, label));
+            }
+            return rez;
+        }
     public:
+        
         void BeforeWork(){//default constructor
             this -> workPoints.resize(0);
             this -> fieldkoord.resize(0);
@@ -1539,7 +122,7 @@ class Field{
         }
         Field(const std::string& filename){//constructor from file
             this -> BeforeWork();
-            this -> allkoord = arrr(filename);
+            this -> allkoord = CreatePointsArray(filename);
             this -> totalsize = allkoord.size();
             this -> field.resize(this -> totalsize); //Reserve memory for our object
             this -> arrsz.resize(this -> totalsize); // int default-constructs to 0
@@ -1558,8 +141,8 @@ class Field{
             return this -> workPoints;
         }
         void AddGroup(const std::unique_ptr <Group> &newgroup){//adding of a group to the field
-            std::unique_ptr <Control> tc = newgroup -> Ret_Field_Group();
-            int gsz = tc -> RetGroupSize();
+            std::unique_ptr <Control> tc = newgroup -> GetFieldGroup();
+            int gsz = tc -> GetGroupSize();
             this -> arrsz.push_back(gsz);
             std::unique_ptr <Group> TempGroup(new Group());
             TempGroup -> Regrupp(tc, this -> pointer);
@@ -1572,8 +155,8 @@ class Field{
             std::vector<Point> tmp;
             for(int i = 0; i < this -> fieldsize; ++ i){
                 tmp.clear();
-                std::unique_ptr <Control> tempcontrol = this -> field[i].Ret_Field_Group();
-                tmp = tempcontrol -> RetGroup();
+                std::unique_ptr <Control> tempcontrol = this -> field[i].GetFieldGroup();
+                tmp = tempcontrol -> GetGroup();
                 totsize += tmp.size();
                 for(unsigned int j = 0; j < tmp.size(); ++ j){
                     this -> allkoord.push_back(Point(tmp[j]));
@@ -3009,7 +1592,7 @@ class Interface{//hand interface
                     Mylog << phi << std::endl;
                     phi = DegreesToRadians(phi);
                     work -> TurnNULL(phi);
-                    gr = work -> RetGroup();
+                    gr = work -> GetGroup();
                     for(int i = 0; i < this -> sz; ++ i){
                         rotated << gr[i].GetX() << " " << gr[i].GetY() << std::endl;
                     }
@@ -3038,8 +1621,8 @@ class Interface{//hand interface
                     std::cin >> phi;
                     Mylog << phi << std::endl;
                     phi = DegreesToRadians(phi);
-                    work -> turnCenter(phi);
-                    gr = work -> RetGroup();
+                    work -> TurnCenter(phi);
+                    gr = work -> GetGroup();
                     for(int i = 0; i < this -> sz; ++ i){
                         rotated << gr[i].GetX() << " " << gr[i].GetY() << std::endl;
                     }
@@ -3068,7 +1651,7 @@ class Interface{//hand interface
                     std::cin >> delx;
                     Mylog << delx << std::endl;
                     work -> MoveX(delx);
-                    gr = work -> RetGroup();
+                    gr = work -> GetGroup();
                     for(int i = 0; i < this -> sz; ++ i){
                         moved << gr[i].GetX() << " " << gr[i].GetY() << std::endl;
                     }
@@ -3097,7 +1680,7 @@ class Interface{//hand interface
                     std::cin >> dely;
                     Mylog << dely << std::endl;
                     work -> MoveY(dely);
-                    gr = work -> RetGroup();
+                    gr = work -> GetGroup();
                     for(int i = 0; i < this -> sz; ++ i){
                         moved << gr[i].GetX() << " " << gr[i].GetY() << std::endl;
                     }
@@ -3178,7 +1761,7 @@ class Interface{//hand interface
                                     std::cin >> alf;
                                     Mylog << "  angle: "<< alf << std::endl;
                                     alf = DegreesToRadians(alf);
-                                    std::unique_ptr <Control> work = temp -> Ret_Field_Group();
+                                    std::unique_ptr <Control> work = temp -> GetFieldGroup();
                                     work -> TurnNULL(alf);
                                     temp -> Regrupp(work);
                                     tr = 0;
@@ -3190,15 +1773,15 @@ class Interface{//hand interface
                                     std::cin >> alf;
                                     Mylog << "  angle: "<< alf << std::endl;
                                     alf = DegreesToRadians(alf);
-                                    std::unique_ptr <Control> work = temp -> Ret_Field_Group();
-                                    work -> turnCenter(alf);
+                                    std::unique_ptr <Control> work = temp -> GetFieldGroup();
+                                    work -> TurnCenter(alf);
                                     temp -> Regrupp(work);
                                     tr = 0;
                                 }
                                 else if(com == "MX"){//moving X
                                     Mylog << "  MX - moving X" << std::endl;
                                     double dx;
-                                    std::unique_ptr <Control> work = temp -> Ret_Field_Group();
+                                    std::unique_ptr <Control> work = temp -> GetFieldGroup();
                                     std::cout << std::endl << " Enter delta x" << std::endl;
                                     std::cin >> dx;
                                     Mylog <<"  delta x: "<<   dx << std::endl;
@@ -3209,7 +1792,7 @@ class Interface{//hand interface
                                 else if(com == "MY"){//moving Y
                                     Mylog << "  MY - moving Y" << std::endl;
                                     double dy;
-                                    std::unique_ptr <Control> work = temp -> Ret_Field_Group();
+                                    std::unique_ptr <Control> work = temp -> GetFieldGroup();
                                     std::cout << std::endl << " Enter delta y" << std::endl;
                                     std::cin >> dy;
                                     Mylog << "  delta y: "<< dy << std::endl;
@@ -3521,7 +2104,7 @@ class InterfaceSTR{//file interface
                     Mylog << "  angle: "<< phi << std::endl;
                     phi = DegreesToRadians(phi);
                     work -> TurnNULL(phi);
-                    gr = work -> RetGroup();
+                    gr = work -> GetGroup();
                     for(int i = 0; i < this -> sz; ++ i){
                         rotated << gr[i].GetX() << " ";
                         rotated << gr[i].GetY() << "\n";
@@ -3555,8 +2138,8 @@ class InterfaceSTR{//file interface
                     pos ++;
                     Mylog << "  angle: "<< phi << std::endl;
                     phi = DegreesToRadians(phi);
-                    work -> turnCenter(phi);
-                    gr = work -> RetGroup();
+                    work -> TurnCenter(phi);
+                    gr = work -> GetGroup();
                     for(int i = 0; i < this -> sz; ++ i){
                         rotated << gr[i].GetX() << " ";
                         rotated << gr[i].GetY() << "\n";
@@ -3590,7 +2173,7 @@ class InterfaceSTR{//file interface
                     pos ++;
                     Mylog << delx << std::endl;
                     work -> MoveX(delx);
-                    gr = work -> RetGroup();
+                    gr = work -> GetGroup();
                     for(int i = 0; i < this -> sz; ++ i){
                         moved << gr[i].GetX() << " ";
                         moved << gr[i].GetY() << "\n";
@@ -3624,7 +2207,7 @@ class InterfaceSTR{//file interface
                     pos ++;
                     Mylog << dely << std::endl;
                     work -> MoveY(dely);
-                    gr = work ->RetGroup();
+                    gr = work ->GetGroup();
                     for(int i = 0; i < this -> sz; ++ i){
                         moved << gr[i].GetX() << " ";
                         moved << gr[i].GetY() << "\n";
@@ -3696,7 +2279,7 @@ class InterfaceSTR{//file interface
                                         pos ++;
                                         Mylog << "  angle: " << alf;
                                         Mylog << ";  angle in radians: " << alf << std::endl;
-                                        std::unique_ptr <Control> work = temp -> Ret_Field_Group();
+                                        std::unique_ptr <Control> work = temp -> GetFieldGroup();
                                         work -> TurnNULL(alf);
                                         temp -> Regrupp(work);
                                         tr = 0;
@@ -3707,15 +2290,15 @@ class InterfaceSTR{//file interface
                                         pos ++;
                                         Mylog << "  angle: " << alf;
                                         Mylog << ";  angle in radians: " << alf << std::endl;
-                                        std::unique_ptr <Control> work = temp -> Ret_Field_Group();
-                                        work -> turnCenter(alf);
+                                        std::unique_ptr <Control> work = temp -> GetFieldGroup();
+                                        work -> TurnCenter(alf);
                                         temp -> Regrupp(work);
                                         tr = 0;
                                     }
                                     else if(com == "MX"){//moving X
                                         Mylog << "  'MX' - moving x" << std::endl;
                                         double dx = stod(this -> comlist[pos]);
-                                        std::unique_ptr <Control> work = temp -> Ret_Field_Group();
+                                        std::unique_ptr <Control> work = temp -> GetFieldGroup();
                                         pos ++;
                                         Mylog <<"  delta x: "<< dx << std::endl;
                                         work -> MoveX(dx);
@@ -3725,7 +2308,7 @@ class InterfaceSTR{//file interface
                                     else if(com == "MY"){//moving Y
                                         Mylog << "  'MY' - moving y" << std::endl;
                                         double dy = stod(this -> comlist[pos]);
-                                        std::unique_ptr <Control> work = temp -> Ret_Field_Group();
+                                        std::unique_ptr <Control> work = temp -> GetFieldGroup();
                                         pos ++;
                                         Mylog <<"  delta y: "<< dy << std::endl;
                                         work -> MoveY(dy);
